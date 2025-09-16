@@ -9,9 +9,15 @@ RUN apt-get update && apt-get install -y \
     git curl build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-# Install PyTorch (CPU version by default)
-RUN pip install --upgrade pip && \
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    git curl build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:${PATH}"
+
 
 # Optional: if you want GPU support (requires NVIDIA drivers + CUDA host setup)
 # RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118

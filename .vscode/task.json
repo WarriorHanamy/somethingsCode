@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": ".venv Python",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "${file}"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}

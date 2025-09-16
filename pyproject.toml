@@ -13,14 +13,24 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 dependencies = [
-    "torch",            # PyTorch
-    "torchvision",      # For image models
-    "torchaudio",       # For audio models
-    "numpy",
-    "matplotlib",
-    "jupyter",
-    "casadi"
+  "torch>=2.7.0",
+  "torchvision>=0.22.0",
+  "torchaudio",
+  "numpy", "matplotlib", "jupyter", "casadi"
 ]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[project.optional-dependencies]
+dev = ["black", "ruff", "pytest", "ipykernel"]
+
 
 [tool.setuptools.packages.find]
 where = ["src"]
