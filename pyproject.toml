@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-pytorch-env"
+version = "0.1.0"
+description = "Python devcontainer with PyTorch, NumPy, Matplotlib, Jupyter, and CasADi"
+authors = [
+  { name = "Hanamy", email = "rongech@outlook.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "torch",            # PyTorch
+    "torchvision",      # For image models
+    "torchaudio",       # For audio models
+    "numpy",
+    "matplotlib",
+    "jupyter",
+    "casadi"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.jupyter]
+notebook-dir = "notebooks"

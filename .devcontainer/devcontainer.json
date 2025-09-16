@@ -1,0 +1,21 @@
+{
+  "name": "Python + PyTorch",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+        "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+    },
+    "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-azuretools.vscode-containers",
+        "be5invis.toml"
+    ],
+    }
+  },
+  "forwardPorts": [8888],
+  "postCreateCommand": "pip install -r requirements.txt || true"
+}
