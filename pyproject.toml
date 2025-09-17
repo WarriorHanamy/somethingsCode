@@ -16,11 +16,16 @@ dependencies = [
   "torch>=2.7.0",
   "torchvision>=0.22.0",
   "torchaudio",
-  "numpy", "matplotlib", "jupyter", "casadi",
+  "numpy", 
+  "matplotlib",
+  "jupyter", 
   "pytest>=8.0",
   "pytest-asyncio>=0.23",
   "hypothesis>=6.0",
   "coverage[toml]>=7.6",
+  "jaxadi>=0.4.0",
+  "casadi",
+  "pinocchio",
 ]
 
 [tool.uv.sources]
@@ -32,8 +37,11 @@ name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
-[project.optional-dependencies]
-dev = ["black", "ruff", "pytest", "ipykernel"]
+[tool.uv]
+dev-dependencies = [
+    "ruff",
+    "pre-commit",
+]
 
 
 [tool.setuptools.packages.find]
