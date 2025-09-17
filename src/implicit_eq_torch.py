@@ -1,5 +1,7 @@
 import torch
+
 torch.manual_seed(0)
+
 
 # ====== 问题设置：y = f(y, x; θ) ======
 class F(torch.nn.Module):
@@ -8,9 +10,11 @@ class F(torch.nn.Module):
         self.A = torch.nn.Parameter(torch.randn(d, d) * 0.3)  # 收敛更稳
         self.B = torch.nn.Parameter(torch.randn(d, d) * 0.3)
         self.b = torch.nn.Parameter(torch.zeros(d))
+
     def forward(self, y, x):
         # f(y,x) = tanh(Ay + Bx + b)
         return torch.tanh(y @ self.A.T + x @ self.B.T + self.b)
+
 
 # ====== 0) 固定点求解器（迭代期间完全 no-grad） ======
 def solve_fixed_point_no_grad(f, x, y0=None, max_iter=100, tol=1e-6):
@@ -24,6 +28,7 @@ def solve_fixed_point_no_grad(f, x, y0=None, max_iter=100, tol=1e-6):
             y = y_next
     return y.detach()
 
+
 # ====== 1) 只解不反传（演示报错的根因与正确写法） ======
 def demo_no_grad_only():
     print("\n[Demo-1] 只解不反传")
@@ -31,8 +36,9 @@ def demo_no_grad_only():
     f = F(d)
     x = torch.randn(3, d)
     y_star = solve_fixed_point_no_grad(f, x)
-    loss = ((y_star - 0.0)**2).mean()
-    print("loss.item()=", float(loss))   # 不要 backward()，因为整个图都被切断了
+    loss = ((y_star - 0.0) ** 2).mean()
+    print("loss.item()=", float(loss))  # 不要 backward()，因为整个图都被切断了
+
 
 # ====== 2) 迭代无梯度，但仍训练参数（单步接图） ======
 def demo_single_step_attach():
@@ -58,6 +64,7 @@ def demo_single_step_attach():
         if step % 10 == 0:
             print(f"step {step:02d} | loss {loss.item():.6f}")
 
+
 # ====== 3) 真·隐式微分：自定义 autograd.Function ======
 # 反向传播需要解：(I - J_y)^T * u = grad_y L
 # 我们用简单的固定点/Neumann 近似来求 u（也可换成共轭梯度）。
@@ -66,7 +73,9 @@ class ImplicitSolve(torch.autograd.Function):
     def forward(ctx, x, module_f, y0, max_iter, tol):
         # 前向：no-grad 迭代拿到 y*
         with torch.no_grad():
-            y_star = solve_fixed_point_no_grad(module_f, x, y0=y0, max_iter=max_iter, tol=tol)
+            y_star = solve_fixed_point_no_grad(
+                module_f, x, y0=y0, max_iter=max_iter, tol=tol
+            )
         # 保存需要的对象/张量用于 backward
         ctx.module_f = module_f
         ctx.save_for_backward(x, y_star)
@@ -89,14 +98,14 @@ class ImplicitSolve(torch.autograd.Function):
             y_star_req = y_star.detach().requires_grad_(True)
             for _ in range(max_iter):
                 # 计算 J_y^T u_k：对 y_star 的扰动方向 u，算 vjp
-                f_y = module_f(y_star_req, x)              # 构图
+                f_y = module_f(y_star_req, x)  # 构图
                 vjp = torch.autograd.grad(
                     outputs=f_y,
                     inputs=y_star_req,
                     grad_outputs=u,
                     retain_graph=True,
                     create_graph=False,
-                    allow_unused=False
+                    allow_unused=False,
                 )[0]
                 u_next = grad_y + vjp
                 if (u_next - u).abs().max().item() < tol:
@@ -110,11 +119,19 @@ class ImplicitSolve(torch.autograd.Function):
             # 对参数的 vjp
             params = [p for p in module_f.parameters() if p.requires_grad]
             grads_params = torch.autograd.grad(
-                outputs=f_y, inputs=params, grad_outputs=u, retain_graph=False, allow_unused=True
+                outputs=f_y,
+                inputs=params,
+                grad_outputs=u,
+                retain_graph=False,
+                allow_unused=True,
             )
             # 对 x 的 vjp
             grad_x = torch.autograd.grad(
-                outputs=f_y, inputs=x, grad_outputs=u, retain_graph=False, allow_unused=True
+                outputs=f_y,
+                inputs=x,
+                grad_outputs=u,
+                retain_graph=False,
+                allow_unused=True,
             )[0]
 
         # 将得到的梯度填回
@@ -132,6 +149,7 @@ class ImplicitSolve(torch.autograd.Function):
 
         return grad_x, None, None, None, None
 
+
 # 供外部调用的“隐式层”
 class ImplicitLayer(torch.nn.Module):
     def __init__(self, f: torch.nn.Module, max_iter=50, tol=1e-6):
@@ -139,10 +157,12 @@ class ImplicitLayer(torch.nn.Module):
         self.f = f
         self.max_iter = max_iter
         self.tol = tol
+
     def forward(self, x, y0=None):
         if y0 is None:
             y0 = torch.zeros_like(x)
         return ImplicitSolve.apply(x, self.f, y0, self.max_iter, self.tol)
+
 
 def demo_true_implicit_diff():
     print("\n[Demo-3] 真·隐式微分（IFT 近似 via VJP fixed-point）")
@@ -155,7 +175,7 @@ def demo_true_implicit_diff():
         x = torch.randn(32, d)
         target = torch.zeros_like(x)
 
-        y_star = layer(x)                          # 前向：no-grad 求解；反向：隐式 VJP 求解
+        y_star = layer(x)  # 前向：no-grad 求解；反向：隐式 VJP 求解
         loss = torch.nn.functional.mse_loss(y_star, target)
 
         opt.zero_grad()
@@ -166,9 +186,9 @@ def demo_true_implicit_diff():
         if step % 10 == 0:
             print(f"step {step:02d} | loss {loss.item():.6f}")
 
+
 # ====== 运行全部演示 ======
 if __name__ == "__main__":
     demo_no_grad_only()
     demo_single_step_attach()
     # demo_true_implicit_diff()
-    

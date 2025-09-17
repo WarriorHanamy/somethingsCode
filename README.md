@@ -22,3 +22,12 @@ uv run coverage run -m pytest
 # 生成报告
 uv run coverage report
 ```
+
+
+
+## Pre-Commit
+After you have done
+```shell
+pre-commit install
+```
+, the git commit will automatically first pre-commit. If there is any error, the commit process wil terminate and cannot completed normally.
