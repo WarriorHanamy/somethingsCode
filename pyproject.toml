@@ -16,7 +16,11 @@ dependencies = [
   "torch>=2.7.0",
   "torchvision>=0.22.0",
   "torchaudio",
-  "numpy", "matplotlib", "jupyter", "casadi"
+  "numpy", "matplotlib", "jupyter", "casadi",
+  "pytest>=8.0",
+  "pytest-asyncio>=0.23",
+  "hypothesis>=6.0",
+  "coverage[toml]>=7.6",
 ]
 
 [tool.uv.sources]
@@ -37,3 +41,17 @@ where = ["src"]
 
 [tool.jupyter]
 notebook-dir = "notebooks"
+
+
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/demo_test"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true

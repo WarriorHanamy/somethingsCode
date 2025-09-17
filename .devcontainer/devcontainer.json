@@ -12,7 +12,8 @@
         "ms-python.python",
         "ms-toolsai.jupyter",
         "ms-azuretools.vscode-containers",
-        "be5invis.toml"
+        "tamasfe.even-better-toml",
+        "yzhang.markdown-all-in-one",
     ],
     }
   },
