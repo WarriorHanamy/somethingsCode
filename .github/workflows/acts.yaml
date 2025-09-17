@@ -19,5 +19,8 @@ jobs:
       - name: Sync dependencies
         run: uv sync
 
+      - name: Run tests (Generation of .coverge file)
+        run: uv run coverage run -m pytest -q
+
       - name: Run tests
         run: uv run coverage report
